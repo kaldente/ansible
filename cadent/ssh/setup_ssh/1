@@ -1,0 +1,16 @@
+### setup_ssh.yml
+### setup passwordless ssh connection from a machine to multiple machines
+### setup_ssh takes public key from a file (name with hostname)  and populate into authorized_keys of
+###       target machine and setup appropriate permissions
+#
+#
+---
+
+- hosts: allbac
+  gather_facts: False
+  become: true
+  become_user: root
+
+  roles:
+     - common
+     - setup_ssh

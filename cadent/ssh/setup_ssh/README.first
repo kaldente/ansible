@@ -1,0 +1,7 @@
+## REVISION: 1.0
+#### 02/07/2017  
+#### Feature: Set up password ssh connection between machines
+#### Usage: setup_ssh_between_two_machines.yml -e "user=user_name pub_key_file=pub_key_file_location"
+#### Prereq.: Create a pub_key_file first if not exists
+
+

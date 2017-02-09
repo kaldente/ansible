@@ -1,0 +1,15 @@
+### setup_ssh.yml
+### setup passwordless connection by copying public kye of a user 
+### and populate into authorized_keys of target machines
+### This script take two external parameters: 'user' and 'pub_key_file'
+#
+---
+
+- hosts: alldev
+  gather_facts: False
+  become: true
+  become_user: root
+
+  roles:
+     - common
+     - setup_ssh

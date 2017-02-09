@@ -1,0 +1,22 @@
+# tasks file for setup_ssh
+
+---
+
+-   name: Validate user and pub_key_file parameter
+    fail: msg="user and pub_key_file have to be provided as extra-vars"
+    when: user is undefined or pub_key_file is undefined 
+
+-   name: Set user home directory if that is not set already.
+    set_fact: user_home="/home/{{ user }}"
+    when: user_home is undefined
+
+
+-   name: Set the pub key path, use pub_key_path as is.
+    set_fact: pub_key_path="roles/common/files/{{ pub_key_file }}"
+    when: pub_key_path is undefined
+
+-   name: Set authorized key took from file
+    authorized_key:
+        user: "{{ user }}"
+        state: present
+        key: "{{ lookup('file', '{{ pub_key_path }}') }}"
