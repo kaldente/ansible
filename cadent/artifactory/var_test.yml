@@ -1,0 +1,10 @@
+# test variables read from ../common/var/main.yml
+
+- hosts: localhost
+  gather_facts: no
+
+  roles:
+  -  common
+  -  test_var
+  #-  get_md5_checksum_values
+

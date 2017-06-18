@@ -1,0 +1,10 @@
+---
+
+- hosts: all 
+  gather_facts: False
+  become: true
+  become_user: root
+
+  roles:
+    - common
+    - copy_files_to_artifactory

@@ -1,0 +1,18 @@
+-   hosts: localhost
+    tags: s21
+    gather_facts: no
+    vars:
+        installers:
+        - /opt/releng/releases/winter.1.dev/installers/install_forecast-winter.1.dev.sh
+        - /opt/releng/releases/winter.1.dev/installers/install_reportinghub-winter.1.dev.sh
+    tasks:
+        - shell: "echo result-{{item}}"
+          register: "r"
+          with_items: "{{ installers }}"
+
+        #- debug: var=r
+        - debug: msg="----------------------------------------------------------"
+
+        - debug: msg="item.item $$$$$$$$$$$$$$$$$$$$$$$$$$$$ ={{item.item}}"
+          with_items: "{{r.results}}"
+

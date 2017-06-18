@@ -1,0 +1,139 @@
+## copy_files_to_artifactory
+#### This ansible script copy file(s) from cruisecontrol to Artifactory
+### Usage:
+
+---
+
+#  verfiy external variables are provided
+-   name: Validate release_name and repository external parameter
+    fail: msg="release_name, repository, and external_version should be provided as extra-vars"
+    when: release_name is undefined or repository is undefined or external_version is undefined
+
+# test file exists
+-   name: check if path to the release name exists
+    stat: path=/opt/releng/releases/{{ release_name }}
+    register: check_path
+
+-   name: path to the release exists
+    debug: msg="Path to the release /opt/releng/releases/{{ release_name }} exsits!"
+    when: check_path.stat.exists
+
+-   name: path to the release does not exist
+    debug: msg="Path to the release /opt/releng/releases/{{ release_name }} does not exist!"
+    when: check_path.stat.exists==false
+
+
+#  tar up /opt/releng/ba directory and place it under /tmp directory. Remove it after upload completed
+-   name: tar up /opt/releng/ba directory
+    shell: "tar -cvf /tmp/ba.tgz /opt/releng/ba/*"
+
+# get MD5 checksum values for each installers 
+    ### TODO: rewrite getting checksum logic usgin Ansbile 'find' module
+    ### Get all installers from var/main.yml and assign them to 'installers'
+-   stat:
+        path: "{{ item }}"
+    register: installers
+    with_items:
+        - "{{ctaas.installers}}"
+
+-   name:   register checksum values of forecast
+    shell: "echo {{ installers['results'][0]['stat']['checksum'] }}"
+    register: forecast_installer
+
+-   name:   register checksum values of reportinghub
+    shell: "echo {{ installers['results'][1]['stat']['checksum'] }}"
+    register: reportinghub_installer
+
+-   name:   register checksum values of bi
+    shell: "echo {{ installers['results'][2]['stat']['checksum'] }}"
+    register: bi_installer
+
+-   name:   register checksum values of core 
+    shell: "echo {{ installers['results'][3]['stat']['checksum'] }}"
+    register: core_installer
+
+-   name:   register checksum values of rulescore dev01 smoke
+    shell: "echo {{ installers['results'][4]['stat']['checksum'] }}"
+    register: rulescore_dev01_smoke_installer
+
+-   name:   register checksum values of rulescore prod01 blackarrow
+    shell: "echo {{ installers['results'][5]['stat']['checksum'] }}"
+    register: rulescore_prod01_blackarrow_installer
+
+-   name:   register checksum values of rulescore prod01 lgi
+    shell: "echo {{ installers['results'][6]['stat']['checksum'] }}"
+    register: rulescore_prod01_lgi_installer
+
+-   name:   register checksum values of rulescore prod01 linear
+    shell: "echo {{ installers['results'][7]['stat']['checksum'] }}"
+    register: rulescore_prod01_linear_installer
+
+-   name:   register checksum values of rulescore prod01 rogers
+    shell: "echo {{ installers['results'][8]['stat']['checksum'] }}"
+    register: rulescore_prod01_rogers_installer
+
+-   name:   register checksum values of rulescore
+    shell: "echo {{ installers['results'][9]['stat']['checksum'] }}"
+    register: rulescore_installer
+
+-   name:   register checksum values of runtime prod01 blackarrow
+    shell: "echo {{ installers['results'][10]['stat']['checksum'] }}"
+    register: runtime_prod01_blackarrow_installer
+
+-   name:   register checksum values of runtime prod01 lgi 
+    shell: "echo {{ installers['results'][11]['stat']['checksum'] }}"
+    register: runtime_prod01_lgi_installer
+
+-   name:   register checksum values of runtime prod01 linear twc
+    shell: "echo {{ installers['results'][12]['stat']['checksum'] }}"
+    register: runtime_prod01_linear_twc_installer
+
+-   name:   register checksum values of runtime prod01 rogers
+    shell: "echo {{ installers['results'][13]['stat']['checksum'] }}"
+    register: runtime_prod01_rogers_installer
+
+-   name:   register checksum values of runtime
+    shell: "echo {{ installers['results'][14]['stat']['checksum'] }}"
+    register: runtime_installer
+
+-   name:   register checksum values of vastff
+    shell: "echo {{ installers['results'][15]['stat']['checksum'] }}"
+    register: vastff_installer
+
+-   name:   register checksum values of README.version
+    shell: "echo {{ installers['results'][16]['stat']['checksum'] }}"
+    register: readme_version
+
+-   name:   register checksum values of ba_tar_file 
+    shell: "echo {{ installers['results'][17]['stat']['checksum'] }}"
+    register: ba_tar_file 
+
+#  upload the file to specified Artifactory repository
+-   name: upload installers to Artifactory with checksum value
+    shell: chdir=/opt/releng/releases/winter.1.dev/installers curl -u jkyung:AKCp2V6d6ogryNL3co3ZHz1g9SEDrZjmsDgFSQYu5217KAyzi4eS6zKBeDSCV3ZM9kzgL7T8S -X PUT "http://repository.blackarrow-corp.com:8081/artifactory/test-uploads/{{ external_version }}.{{ release_name }}/" -T {{ item.name }} -H "X-Checksum-Sha1:{{ item.checksum }}" 
+    with_items:
+        - { name: '/opt/releng/releases/{{ release_name }}/installers/install_forecast-{{ release_name }}.sh', checksum: '{{ forecast_installer.stdout }}'}
+        - { name: '/opt/releng/releases/{{ release_name }}/installers/install_reportinghub-{{ release_name }}.sh', checksum: '{{ reportinghub_installer.stdout }}' }
+        - { name: '/opt/releng/releases/{{ release_name }}/installers/install_bi-{{ release_name }}.sh', checksum: '{{ bi_installer.stdout }}'}
+        - { name: '/opt/releng/releases/{{ release_name }}/installers/install_core-{{ release_name }}.sh', checksum: '{{ core_installer.stdout }}' }
+        - { name: '/opt/releng/releases/{{ release_name }}/installers/install_rulescore-{{ release_name }}-dev01.smoketest.sh', checksum: '{{ rulescore_dev01_smoke_installer.stdout }}'}
+        - { name: '/opt/releng/releases/{{ release_name }}/installers/install_rulescore-{{ release_name }}-prod01.blackarrow.sh', checksum: '{{rulescore_prod01_blackarrow_installer.stdout }}' }
+        - { name: '/opt/releng/releases/{{ release_name }}/installers/install_rulescore-{{ release_name }}-prod01.lgi.sh', checksum: '{{ rulescore_prod01_lgi_installer.stdout }}'}
+        - { name: '/opt/releng/releases/{{ release_name }}/installers/install_rulescore-{{ release_name }}-prod01.linear.twc.sh', checksum: '{{ rulescore_prod01_linear_installer.stdout }}' }
+        - { name: '/opt/releng/releases/{{ release_name }}/installers/install_rulescore-{{ release_name }}-prod01.rogers.sh', checksum: '{{ rulescore_prod01_rogers_installer.stdout }}'}
+        - { name: '/opt/releng/releases/{{ release_name }}/installers/install_rulescore-{{ release_name }}.sh', checksum: '{{ rulescore_installer.stdout }}' }
+        - { name: '/opt/releng/releases/{{ release_name }}/installers/install_runtime-{{ release_name }}-prod01.blackarrow.sh', checksum: '{{ runtime_prod01_blackarrow_installer.stdout }}'}
+        - { name: '/opt/releng/releases/{{ release_name }}/installers/install_runtime-{{ release_name }}-prod01.lgi.sh', checksum: '{{ runtime_prod01_lgi_installer.stdout }}' }
+        - { name: '/opt/releng/releases/{{ release_name }}/installers/install_runtime-{{ release_name }}-prod01.linear.twc.sh', checksum: '{{ runtime_prod01_linear_twc_installer.stdout }}'}
+        - { name: '/opt/releng/releases/{{ release_name }}/installers/install_runtime-{{ release_name }}-prod01.rogers.sh', checksum: '{{ runtime_prod01_rogers_installer.stdout }}' }
+        - { name: '/opt/releng/releases/{{ release_name }}/installers/install_runtime-{{ release_name }}.sh', checksum: '{{ runtime_installer.stdout }}'}
+        - { name: '/opt/releng/releases/{{ release_name }}/installers/install_vastff-{{ release_name }}.sh', checksum: '{{ vastff_installer.stdout }}' }
+        - { name: '/opt/releng/releases/{{ release_name }}/README.version', checksum: '{{ readme_version.stdout }}' }
+        - { name: '/tmp/ba.tgz', checksum: '{{ ba_tar_file.stdout }}' }
+
+
+#  remove ba.tgz file from /tmp directory.
+-   name: remove ba tar file
+    file:
+        path: /tmp/ba.tgz
+        state: absent

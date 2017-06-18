@@ -1,0 +1,12 @@
+---
+# unarchive-qcow.yaml
+- hosts: localhost
+  gather_facts: true
+
+  tasks:
+    - name: some archive
+      #debug:
+      #  msg: "some message"
+      archive:
+        src: "/home/jkyung"
+        dest: "/tmp/jkyung.tgz"

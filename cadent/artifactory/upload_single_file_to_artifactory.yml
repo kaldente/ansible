@@ -1,0 +1,13 @@
+### upload_single_file_to_artifactory.yml
+#### upload (release) a single file to a spcified repository of Artifact
+#### This script take two external parameters: 'file_name' and 'repository'
+##
+---
+
+-   hosts: all
+    gather_facts: False
+    become: true
+    become_user: root
+
+    roles:
+        - copy_files_to_artifactory

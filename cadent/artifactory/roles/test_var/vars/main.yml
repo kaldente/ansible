@@ -1,0 +1,6 @@
+---
+ctaas:
+    installers:
+        - /opt/releng/releases/{{ release_name }}/installers/install_forecast-{{ release_name }}.sh
+        - /opt/releng/releases/{{ release_name }}/installers/install_reportinghub-{{ release_name }}.sh
+        - /opt/releng/releases/{{ release_name }}/installers/install_bi-{{ release_name }}.sh

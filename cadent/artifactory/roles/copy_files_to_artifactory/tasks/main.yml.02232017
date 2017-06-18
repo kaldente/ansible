@@ -1,0 +1,60 @@
+## copy_files_to_artifactory
+#### This ansible script copy file(s) from cruisecontrol to Artifactory
+### Usage:
+
+---
+
+# TODO: verfiy external variables are provided
+-   name: Validate release_name and repository external parameter
+    fail: msg="release_name, repository, and external_version should be provided as extra-vars"
+    when: release_name is undefined or repository is undefined or external_version is undefined
+
+# test file exists
+-   name: check if path to the release exists
+    stat: path=/opt/releng/releases/{{ release_name }}
+    register: check_path
+
+-   name: path to the release exists
+    debug: msg="Path to the release /opt/releng/releases/{{ release_name }} exsits!"
+    when: check_path.stat.exists
+
+-   name: path to the release does not exist
+    debug: msg="Path to the release /opt/releng/releases/{{ release_name }} does not exist!"
+    when: check_path.stat.exists==false
+
+
+# TODO: get MD5 checksum for the file
+-   stat: 
+        path=/opt/releng/releases/{{ release_name }}/installers/install_reportinghub-winter.1.dev.sh 
+        get_md5=yes
+    register: checksum_value
+    
+-   debug:
+        msg: "checksum value is {{ checksum_value.stat.checksum }}"
+
+-   name: get the list of files under installer directory
+    find:
+        path: "/opt/releng/releases/{{ release_name }}"
+        patterns: "*.sh"
+        get_checksum: true
+
+
+# TODO: upload the file to specified Artifactory repository
+-   name: upload installers to Artifactory with checksum value
+    shell: chdir=/opt/releng/releases/winter.1.dev/installers curl -u jkyung:AKCp2V6d6ogryNL3co3ZHz1g9SEDrZjmsDgFSQYu5217KAyzi4eS6zKBeDSCV3ZM9kzgL7T8S -X PUT "http://repository.blackarrow-corp.com:8081/artifactory/test-uploads/{{ external_version }}.{{ release_name }}/" -T {{ item.name }} -H "X-Checksum-Sha1:{{ item.checksum }}" 
+    with_items:
+        - { name: '/opt/releng/releases/winter.1.dev/installers/install_forecast-winter.1.dev.sh', checksum: '317ec89629e4d9c245ba81c1367a7b037af88dc5' }
+        - { name: '/opt/releng/releases/winter.1.dev/installers/install_reportinghub-winter.1.dev.sh', checksum: 'c98412e5b4751a59d033fa572efbdecfff31a4f0' }
+    with_fileglob:
+        - /opt/releng/releases/winter.1.dev/installers/*
+
+#-   debug:
+#        msg: "file from file_globe is: {{ item }}"
+#        with_fileglob:
+#            - /opt/releng/releases/winter.1.dev/installers/*
+
+-   copy: 
+        src: "{{ item }}"
+        dest: /tmp 
+        with_fileglob:
+            - /home/jkyung/projects/cadent/artifactory/roles/common/files/*

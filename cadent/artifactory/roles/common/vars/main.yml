@@ -1,0 +1,22 @@
+---
+ctaas:
+    installers:
+        - /opt/releng/releases/{{ release_name }}/installers/install_forecast-{{ release_name }}.sh
+        - /opt/releng/releases/{{ release_name }}/installers/install_reportinghub-{{ release_name }}.sh
+        - /opt/releng/releases/{{ release_name }}/installers/install_bi-{{ release_name }}.sh
+        - /opt/releng/releases/{{ release_name }}/installers/install_core-{{ release_name }}.sh
+        - /opt/releng/releases/{{ release_name }}/installers/install_rulescore-{{ release_name }}-dev01.smoketest.sh
+        - /opt/releng/releases/{{ release_name }}/installers/install_rulescore-{{ release_name }}-prod01.blackarrow.sh
+        - /opt/releng/releases/{{ release_name }}/installers/install_rulescore-{{ release_name }}-prod01.lgi.sh
+        - /opt/releng/releases/{{ release_name }}/installers/install_rulescore-{{ release_name }}-prod01.linear.twc.sh
+        - /opt/releng/releases/{{ release_name }}/installers/install_rulescore-{{ release_name }}-prod01.rogers.sh
+        - /opt/releng/releases/{{ release_name }}/installers/install_rulescore-{{ release_name }}.sh
+        - /opt/releng/releases/{{ release_name }}/installers/install_runtime-{{ release_name }}-prod01.blackarrow.sh
+        - /opt/releng/releases/{{ release_name }}/installers/install_runtime-{{ release_name }}-prod01.lgi.sh
+        - /opt/releng/releases/{{ release_name }}/installers/install_runtime-{{ release_name }}-prod01.linear.twc.sh
+        - /opt/releng/releases/{{ release_name }}/installers/install_runtime-{{ release_name }}-prod01.rogers.sh
+        - /opt/releng/releases/{{ release_name }}/installers/install_runtime-{{ release_name }}.sh
+        - /opt/releng/releases/{{ release_name }}/installers/install_vastff-{{ release_name }}.sh
+        - /opt/releng/releases/{{ release_name }}/README.version
+        - /tmp/ba.tgz
+        - /tmp/sql-{{ release_name }}.sql.tgz

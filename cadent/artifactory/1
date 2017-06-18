@@ -1,0 +1,8 @@
+## REVISION: 1.0
+#### 02/13/2017  
+### This script takes location of release and repository location then upload
+### the release to the Artifactory
+#### Usage: 
+#### Prereq.:
+
+

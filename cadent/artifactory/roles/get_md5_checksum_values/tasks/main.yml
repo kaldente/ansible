@@ -1,0 +1,24 @@
+## copy_files_to_artifactory
+#### This ansible script copy file(s) from cruisecontrol to Artifactory
+### Usage:
+
+---
+
+# TODO: get MD5 checksum for the file
+-   stat: 
+        path: "{{ item }}"
+    register: cv
+    with_items: 
+        - "{{ctaas.installers}}"
+
+-   debug: var=cv
+
+   
+-   debug:
+        msg: "{{ cv['results'][0]['stat']['checksum'] }} >>>>>>>>>>>>>>   {{ cv['results'][1]['stat']['checksum'] }}"
+
+
+#-   debug: #var=cv
+#        msg: 
+#            "checksum is {{ item }}"
+#        with_items: cv.results

@@ -1,0 +1,57 @@
+## copy_files_to_artifactory
+#### This ansible script copy file(s) from cruisecontrol to Artifactory
+### Usage:
+
+---
+
+# TODO: verfiy external variables are provided
+-   name: Validate release_name and repository external parameter
+    fail: msg="release_name, repository, and external_version should be provided as extra-vars"
+    when: release_name is undefined or repository is undefined or external_version is undefined
+
+# test file exists
+-   name: check if path to the release exists
+    stat: path=/opt/releng/releases/{{ release_name }}
+    register: check_path
+
+-   name: path to the release exists
+    debug: msg="Path to the release /opt/releng/releases/{{ release_name }} exsits!"
+    when: check_path.stat.exists
+
+-   name: path to the release does not exist
+    debug: msg="Path to the release /opt/releng/releases/{{ release_name }} does not exist!"
+    when: check_path.stat.exists==false
+
+
+# TODO: get MD5 checksum values for each installers 
+
+# Get all installers from var/main.yml and assign them to 'installers'
+-   stat:
+        path: "{{ item }}"
+    register: installers
+    with_items:
+        - "{{ctaas.installers}}"
+
+-   name: testing to register checksum values of forecast
+    shell: "echo {{ installers['results'][0]['stat']['checksum'] }}"
+    register: forecast_installer
+
+-   name: testing to register checksum values of reportinghub
+    shell: "echo {{ installers['results'][1]['stat']['checksum'] }}"
+    register: reportinghub_installer
+
+-   name: testing to register checksum values of bi
+    shell: "echo {{ installers['results'][2]['stat']['checksum'] }}"
+    register: bi_installer
+
+#-   debug:
+#        msg: "forecast-installer is: {{ forecast_installer.stdout }} reportinghub-installer is: {{ reportinghub_installer.stdout }} bi-installer is: {{ bi_installer.stdout }}"
+
+
+# TODO: upload the file to specified Artifactory repository
+-   name: upload installers to Artifactory with checksum value
+    shell: chdir=/opt/releng/releases/winter.1.dev/installers curl -u jkyung:AKCp2V6d6ogryNL3co3ZHz1g9SEDrZjmsDgFSQYu5217KAyzi4eS6zKBeDSCV3ZM9kzgL7T8S -X PUT "http://repository.blackarrow-corp.com:8081/artifactory/test-uploads/{{ external_version }}.{{ release_name }}/" -T {{ item.name }} -H "X-Checksum-Sha1:{{ item.checksum }}" 
+    with_items:
+        #- { name: '{{ installer_forcast }}', checksum: '{{ forecast_installer.stdout }}'}
+        - { name: '/opt/releng/releases/{{ release_name }}/installers/install_forecast-{{ release_name }}.sh', checksum: '{{ forecast_installer.stdout }}'}
+        - { name: '/opt/releng/releases/{{ release_name }}/installers/install_reportinghub-{{ release_name }}.sh', checksum: 'c98413e5b4751a59d033fa572efbdecfff31a4f0' }
