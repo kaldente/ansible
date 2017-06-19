@@ -1,0 +1,48 @@
+---
+
+###########  Preparation
+
+# TODO: verify user exist on a targe machine and get group name. since LDAP user might have different group name
+
+# verify external parameter release_name and customer_name
+-   name: verify external parameter release_name and customer_name
+    fail: msg="release_name and customer_name should be provided as extra-vars"
+    when: release_name is undefined or customer_name is undefined
+
+# create directory /opt/blackarrow/ctadapters and set the permission to baadmin 
+-   name: create directory /opt/blackarrow/ctadapters and set the permission to baadmin
+    file:
+        path: /opt/blackarrow/ctadapters
+        state: directory
+        owner: baadmin
+        group: baadmin
+        recurse: yes
+        mode: 0755
+
+# create a directory /opt/blackarrow/ctadapters/.devops
+-   name: create directory /opt/blackarrow/ctadapters and set the permission to baadmin
+    file:
+        path: /opt/blackarrow/ctadapters/.devops
+        state: directory
+
+########### Install binaries (mule server, jdk, etc...)
+
+# generate random string to create a directory with 
+-   name: generate random string to be used to create a temporary directory
+    shell: date +%s | sha256sum | head -c25
+    register: random_string
+
+-   debug:
+        msg: "random string is: {{ random_string.stdout }}"
+
+# create a temporary directory under /tmp/[random_string]
+-   name: create a random directory under /tmp 
+    file:
+        path: /tmp/{{ random_string.stdout }}
+        state: directory
+        mode: 0755
+    register: tmp_dir
+
+-   debug:
+        msg: "temp directory is: {{ tmp_dir.path }}"
+

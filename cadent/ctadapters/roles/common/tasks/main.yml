@@ -1,0 +1,48 @@
+---
+
+###########  PREPARATION
+
+# TODO: verify user exist on a targe machine and get group name. since LDAP user might have different group name
+
+-   name: verify external parameter "release_name" and "customer_name"
+    fail: msg="release_name and customer_name should be provided as extra-vars"
+    when: release_name is undefined or customer_name is undefined
+
+-   name: create directory /opt/blackarrow/ctadapters on target machine if not exists and set the permission to baadmin
+    file:
+        path: /opt/blackarrow/ctadapters
+        state: directory
+        owner: baadmin
+        group: baadmin
+        recurse: yes
+        mode: 0755
+    register: ctadapters_dir
+
+-   name: create directory /opt/blackarrow/ctadapters/.devops if not exists and set the permission to baadmin
+    file:
+        path: /opt/blackarrow/ctadapters/.devops
+        state: directory
+
+# create temp directory with random number 
+
+-   name: generate random string to be used to create a temporary directory
+    shell: date +%s | sha256sum | head -c25
+    register: rs
+
+-   name: create a random directory under /tmp 
+    file:
+        path: /tmp/{{ rs.stdout }}
+        state: directory
+        owner: baadmin
+        group: baadmin
+        mode: 0755
+    register: tmp_dir
+
+# create temp directory on local machine (ansible running machine) due do copy module behavior
+
+#-   name: create a random directory on local machine
+#    file:
+#        path: "{{ tmp_dir }}/ctadapters/mule_server/apps"
+#        state: directory
+
+

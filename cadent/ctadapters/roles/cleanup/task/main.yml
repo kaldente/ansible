@@ -1,0 +1,7 @@
+---
+
+# clean up
+-   name: ctadapters deployment completed. Deleting... {{ tmp_dir.path }}
+    file:
+        path: "{{ tmp_dir.path }}"
+        state: absent

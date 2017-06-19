@@ -1,0 +1,10 @@
+---
+# variables for ctadapter deployment
+ctapaters_dir: /opt/blackarrow/ctadapters
+devops_dir: "{{ ctapaters_dir }}/.devops"
+apps_dir: "{{ ctapaters_dir }}/mule_server/apps"
+binary_artifactory_url: "http://repository.blackarrow-corp.com:8081/artifactory/ct-adapters/binaries/ctadapters_binaries.tar.gz"
+saved_preprocessor: "{{ devops_dir }}/{{ customer_name }}preprocessor.zip"
+ctadapters_artifactory_url: "http://repository.blackarrow-corp.com:8081/artifactory/ct-adapters/{{ customer_name }}/ctadapters.tar"
+saved_cisadapter: "{{ devops_dir }}/cisadapter.zip"
+saved_notificationadapter: "{{ devops_dir }}/notificationadapter.zip"

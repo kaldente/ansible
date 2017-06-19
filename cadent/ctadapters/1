@@ -1,0 +1,68 @@
+---
+
+###########  Preparation
+
+# TODO: verify user exist on a targe machine and get group name. since LDAP user might have different group name
+
+# verify external parameter release_name and customer_name
+-   name: verify external parameter release_name and customer_name
+    fail: msg="release_name and customer_name should be provided as extra-vars"
+    when: release_name is undefined or customer_name is undefined
+
+# create directory /opt/blackarrow/ctadapters and set the permission to baadmin 
+-   name: create directory /opt/blackarrow/ctadapters and set the permission to baadmin
+    file:
+        path: /opt/blackarrow/ctadapters
+        state: directory
+        owner: baadmin
+        group: baadmin
+        recurse: yes
+        mode: 0755
+
+# create a directory /opt/blackarrow/ctadapters/.devops
+-   name: create directory /opt/blackarrow/ctadapters and set the permission to baadmin
+    file:
+        path: /opt/blackarrow/ctadapters/.devops
+        state: directory
+
+########### Install binaries (mule server, jdk, etc...)
+
+# generate random string to create a directory with 
+-   name: generate random string to be used to create a temporary directory
+    shell: date +%s | sha256sum | head -c25
+    register: random_string
+
+-   debug:
+        msg: "random string is: {{ random_string.stdout }}"
+
+# create a temporary directory under /tmp/[random_string]
+-   name: create a random directory under /tmp 
+    file:
+        path: /tmp/{{ random_string.stdout }}
+        state: directory
+        mode: 0777
+    register: tmp_dir
+
+-   debug:
+        msg: "temp directory is: {{ tmp_dir }}
+
+# download binaries from Artifactory
+-   name: ctadapters download binaries from Artifactory
+    get_url:
+        url: http://repository.blackarrow-corp.com:8081/artifactory/ct-adapters/binaries/ctadapters_binaries.tar.gz
+        dest: tmp_dir
+
+# untar binaries under /opt/blackarrow/ctadapters (should NOT overwirte existing files)
+
+########### Install Adapters
+
+# wget ctadapters with customer name
+
+# untar ctadapters.tar to /tmp/[random_string]
+
+# check to see charterpreprocessor, cisadapter, and notification adapter are under tmp/jay_tmp/[random_string]/mule_server/apps
+
+# verify charterpreprocessor, cisadapter, and notification adapter are under /opt/blackarrow/ctadapters/mule_server/apps directory
+
+# if same adapter not exists in /opt/blackarrow/ctadapters/mule_server/apps, .......................
+

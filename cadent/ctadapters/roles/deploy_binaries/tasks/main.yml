@@ -1,0 +1,16 @@
+---
+################ Install binaries, deployment would NOT overwrite if any file exists already
+
+# download binaries from Artifactory
+-   name: ctadapters download binaries from Artifactory
+    get_url:
+        url: "{{ binary_artifactory_url }}"
+        dest: "{{ tmp_dir.path }}"
+        mode: 0755
+        owner: baadmin
+
+-   name: untar binaries at /opt/blackarrow/ctadapters (existing files will not be overwritten)
+    shell: tar -xvf {{ tmp_dir.path }}/ctadapters_binaries.tar.gz -C /opt/blackarrow/ctadapters --skip-old-files
+
+
+

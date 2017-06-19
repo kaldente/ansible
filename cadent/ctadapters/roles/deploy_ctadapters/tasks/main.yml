@@ -1,0 +1,115 @@
+---
+
+########### Install ctadapters (preprocessor, cisadapter, and notification adapter)
+
+-   name: download ctadapters from Artifactory for {{ customer_name }}
+    get_url:
+        url: "{{ ctadapters_artifactory_url }}"
+        dest: "{{ tmp_dir.path }}"
+        mode: 0755
+        owner: baadmin
+
+-   name: untar ctadapters.tar to a tmp_dir
+    shell: tar -xvf {{ tmp_dir.path }}/ctadapters.tar  
+    args:
+        chdir: "{{ tmp_dir.path }}"
+
+# register newly downloaded ctsadapters
+-   name: register new charterpreprocessor.zip file
+    stat:
+        path: "{{ tmp_dir.path }}/ctadapters/mule_server/apps/charterpreprocessor.zip"
+    register: dl_cp_zip
+
+-   name: register new cisadapter.zip file
+    stat:
+        path: "{{ tmp_dir.path }}/ctadapters/mule_server/apps/cisadapter.zip"
+    register: dl_ca_zip
+
+-   name: register new notificationadapter.zip file
+    stat:
+        path: "{{ tmp_dir.path }}/ctadapters/mule_server/apps/notificationadapter.zip"
+    register: dl_na_zip
+
+# register saved ctsadapters from previous deployment
+-   name: register saved charterpreprocessor.zip file
+    stat:
+        path: "{{ saved_preprocessor }}"
+    register: saved_cp_zip
+
+-   name: register saved cisadapter.zip file
+    stat:
+        path: "{{ saved_cisadapter }}"
+    register: saved_ca_zip
+
+-   name: register saved notificationadapter.zip file
+    stat:
+        path: "{{ saved_notificationadapter }}"
+    register: saved_na_zip
+
+# copy ctadapters
+-   name: copy charterpreprocessor.zip to .devops  directory if both save and downloaded files exist but their checksums are different
+    copy:
+        src: "{{ tmp_dir.path }}/ctadapters/mule_server/apps/{{ item }}"
+        dest: "{{ devops_dir }}"
+    with_items:
+        - "{{ customer_name }}preprocessor.zip"
+    when: saved_cp_zip.stat.exists == True and dl_cp_zip.stat.exists == True and (saved_cp_zip.stat.checksum != dl_cp_zip.stat.checksum)
+
+-   name: copy {{ customer_name }} preprocessor.zip to .devops  directory if both save and downloaded files exist but their checksums are different
+    copy:
+        src: "{{ tmp_dir.path }}/ctadapters/mule_server/apps/{{ item }}"
+        dest: "{{ devops_dir }}"
+    with_items:
+        - cisadapter.zip
+    when: saved_ca_zip.stat.exists == True and dl_ca_zip.stat.exists == True and (saved_ca_zip.stat.checksum != dl_ca_zip.stat.checksum)
+
+-   name: copy notificationadapter.zip to .devops  directory if both save and downloaded files exist but their checksums are different
+    copy:
+        src: "{{ tmp_dir.path }}/ctadapters/mule_server/apps/{{ item }}"
+        dest: "{{ devops_dir }}"
+    with_items:
+        - notificationadapter.zip
+    when: saved_na_zip.stat.exists == True and dl_na_zip.stat.exists == True and (saved_na_zip.stat.checksum != dl_na_zip.stat.checksum)
+
+# fetch zip files from target machine to local machine (due to Ansible copy module behaviro)
+#-   name: copy preprocessor.zip from target machine to local machine 
+#    fetch:
+#        src: "{{ tmp_dir.path }}/ctadapters/mule_server/apps/charterpreprocessor.zip"
+#        dest: "{{ tmp_dir.path }}/ctadapters/mule_server/apps/charterpreprocessor.zip"
+
+#-   name: copy charterpreprocessor.zip to .devops  directory if there isn't saved charterpreprocessor.zip under /opt/blackarrow/ctadapters/.devops
+#    copy:
+#       src: "{{ tmp_dir.path }}/ctadapters/mule_server/apps/charterpreprocessor.zip"
+#       dest: "{{ item }}"
+#       owner: baadmin
+#       group: baadmin
+
+-   name: copy {{ customer_name }}preprocessor.zip from temp to .devops and apps directories
+    shell: cp {{ tmp_dir.path }}/ctadapters/mule_server/apps/charterpreprocessor.zip {{ item }}
+    with_items:
+        - "{{ devops_dir }}" 
+        - "{{ apps_dir }}"
+    when: saved_cp_zip.stat.exists == False and dl_cp_zip.stat.exists == True 
+
+-   name: copy cisadapter.zip from temp to .devops and apps directories
+    shell: cp {{ tmp_dir.path }}/ctadapters/mule_server/apps/cisadapter.zip {{ item }}
+    with_items:
+        - "{{ devops_dir }}"
+        - "{{ apps_dir }}"
+    when: saved_ca_zip.stat.exists == False and dl_ca_zip.stat.exists == True
+
+-   name: copy notificationadapter.zip from temp to .devops and apps directories
+    shell: cp {{ tmp_dir.path }}/ctadapters/mule_server/apps/notificationadapter.zip {{ item }}
+    with_items:
+        - "{{ devops_dir }}"
+        - "{{ apps_dir }}"
+    when: saved_na_zip.stat.exists == False and dl_na_zip.stat.exists == True
+
+# clean up
+-   name: ctadapters deployment completed. Deleting... {{ tmp_dir.path }}
+    file:
+        path: "{{ tmp_dir.path }}"
+        state: absent
+
+
+
