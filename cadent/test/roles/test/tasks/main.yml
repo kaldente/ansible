@@ -1,0 +1,37 @@
+---
+
+#- set_fact:
+#    src_file: /tmp/abc
+#    dest_loc: /tmp/ctadapters/
+
+#- name: Fetch file from host to local
+#  fetch:
+#    src: "{{ src_file }}"
+#    dest: "{{ dest_loc }}" 
+#    flat: yes
+
+#- name: Copy file from local host remote host
+#  copy:
+#    src: /tmp/ctadapters/abc
+#    dest: /opt/blackarrow/ctadapters/.devops
+  
+#- name: copy remote to remote
+#  copy: remote_src=True src=/tmp/jay/xyz dest=/tmp
+
+-   name: group permission test
+    file:
+        path: /opt/blackarrow/test/sub1/sub2
+        state: directory
+        owner: baadmin
+        group: "{{ baadmin_group }}"
+        recurse: yes
+        mode: 0755
+
+-   name: change permission of ctadpter directory after copying it from temp directory
+    file:
+        path: /opt/blackarrow/test
+        state: directory
+        owner: baadmin
+        group: "{{ baadmin_group }}"
+        recurse: yes
+        mode: 0755
