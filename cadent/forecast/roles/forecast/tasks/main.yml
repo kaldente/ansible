@@ -1,0 +1,104 @@
+---
+# tasks file for forecast
+## copy_files_to_artifactory
+#### This ansible script copy file(s) from cruisecontrol to Artifactory
+### Usage:
+
+
+- name: yum install libaio 
+  yum:
+    name: libaio
+    state: present
+
+- name: yum install perl
+  yum:
+    name: perl
+    state: present
+
+#- file: 
+#    dest: /opt/ba_mysqlJ
+#    owner: mysql
+#    group: mysql
+#    state: directory
+
+- name: create ba_mysql directory structure
+  shell: mkdir -p /opt/ba_mysql /opt/ba_mysql/conf /opt/ba_mysql/data/work /opt/ba_mysql/data/mysql /opt/ba_mysql/logs /opt/ba_mysql/work /opt/ba_mysql/logs/bin /opt/ba_mysql/logs/relay /opt/ba_mysql/logs/logs /opt/ba_mysql/logs/slow /opt/ba_mysql/logs/tmp
+  register: mkdir_output
+
+- name: create mysql group
+  group:
+    name: mysql
+    state: present
+
+- name: create mysql user
+  user:
+    name: mysql
+    group: mysql
+  
+
+- name: set ownership of /opt/ba_mysql to mysql
+  file: 
+    path: /opt/ba_mysql
+    state: directory
+    owner: mysql
+    group: mysql
+    recurse: yes
+
+- name: copy my.cnf file to /opt/ba_mysql/conf/
+  copy:
+    src: "~/projects/ansible/cadent/forecast/roles/common/files/my.cnf"
+    dest: /opt/ba_mysql/conf
+    owner: mysql
+    group: mysql 
+
+- name: remove /etc/my.cnf
+  file:
+    path: /etc/my.cnf
+    state: absent
+
+- name: create symlink /opt/ba_mysql/conf/my.cnf to /etc/my.cnf
+  file:
+    src: /opt/ba_mysql/conf/my.cnf
+    dest: /etc/my.cnf
+    owner: mysql
+    group: mysql
+    state: link
+
+- name: remove /var/lib/mysql directory
+  file:
+    path: /var/lib/mysql
+    state: absent
+
+### J: parameterize artifactory location
+- name: install percona-server-shared
+  yum:
+    name: https://www.percona.com/downloads/Percona-Server-5.6/Percona-Server-5.6.25-73.1/binary/redhat/6/x86_64/Percona-Server-shared-56-5.6.25-rel73.1.el6.x86_64.rpm
+    state: present
+
+- name: install percona-server-client
+  yum:
+      name: https://www.percona.com/downloads/Percona-Server-5.6/Percona-Server-5.6.25-73.1/binary/redhat/6/x86_64/Percona-Server-client-56-5.6.25-rel73.1.el6.x86_64.rpm
+      state: present
+
+- name: install percona-server-server
+  yum:
+      name: https://www.percona.com/downloads/Percona-Server-5.6/Percona-Server-5.6.25-73.1/binary/redhat/6/x86_64/Percona-Server-server-56-5.6.25-rel73.1.el6.x86_64.rpm
+      state: present
+
+- name: create a symlink /var/lib/mysql to /opt/ba_mysql/work
+  file:
+    src: /opt/ba_mysql/work
+    dest: /var/lib/mysql
+    owner: mysql
+    group: mysql
+    state: link
+
+- name: start mysql server
+  service:
+    name: mysql
+    state: started
+
+### TODO
+#- name: run msyql_secure_installation
+
+#- name: set mysql root password to 'root123' if not provided as external variable

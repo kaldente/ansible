@@ -1,0 +1,66 @@
+---
+# Set root password
+# UPDATE mysql.user SET Password=PASSWORD('mysecret') WHERE User='root';
+# FLUSH PRIVILEGES;
+
+- name: Install Python module which is required to run mysql commands
+  yum:
+    name: MySQL-python
+    state: present
+
+#- name: Set root password
+#  mysql_user: name=root host={{ item }} password={{ mysql_root_password }} update_password=always state=present
+#  with_items:
+#    - localhost
+#    - 127.0.0.1
+#    - ::1
+
+#- name: Set root password for host 127.0.0.1
+#  mysql_user: name=root host="127.0.0.1" password={{ mysql_root_password }} update_password=always state=present
+
+- name: Set root@127.0.0.1 password
+  command: mysql --user=badeploy --password=badeploy123 --host=localhost --batch --skip-column-names --execute="update mysql.user set password = password('{{ mysql_root_password }}') where user = root"
+  always_run: True
+  register: sql_output
+
+- name: Set root@127.0.0.1 password
+  command: mysql --user=badeploy --password={{ mysql_root_password }} --host=localhost --batch --skip-column-names --execute="flush privileges"
+  register: sql_output
+
+- debug:
+    var: sql_output
+
+- name: Reload privilege tables
+  command: 'mysql -ne "{{ item }}" -h 127.0.0.1 -u root -p'
+  with_items:
+    - FLUSH PRIVILEGES
+  changed_when: False
+
+#- name: Add my.cnf
+#  template: src=my.cnf.j2 dest=/root/.my.cnf owner=root group=root mode=0600
+
+- name: Remove anonymous users
+  command: 'mysql -ne "{{ item }}" -h 127.0.0.1'
+  with_items:
+    - DELETE FROM mysql.user WHERE User=''
+  changed_when: False
+
+- name: Disallow root login remotely
+  command: 'mysql -ne "{{ item }}" -h 127.0.0.1'
+  with_items:
+    - DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1')
+  changed_when: False
+
+- name: Remove test database and access to it
+  command: 'mysql -ne "{{ item }}" -h 127.0.0.1'
+  with_items:
+    - DROP DATABASE test
+    - DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%'
+  changed_when: False
+  ignore_errors: True
+
+- name: Reload privilege tables
+  command: 'mysql -ne "{{ item }}" -h 127.0.0.1'
+  with_items:
+    - FLUSH PRIVILEGES
+  changed_when: False

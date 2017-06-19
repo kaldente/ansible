@@ -1,0 +1,25 @@
+---
+# tasks file for forecast
+## copy_files_to_artifactory
+#### This ansible script copy file(s) from cruisecontrol to Artifactory
+### Usage:
+
+
+- name: yum install libaio 
+  yum:
+    name: libaio
+    state: present
+
+- name: yum install perl
+  yum:
+    name: perl
+    state: present
+
+- file: 
+    path: /opt/{{ item }}
+    owner: mysql
+    group: mysql
+    state: directory
+    with_items:
+        - ba_mysqlJ
+        - ba_mysql_confJ
